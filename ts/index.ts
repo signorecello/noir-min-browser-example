@@ -9,9 +9,11 @@ import { ethers } from 'ethers'; // I'm lazy so I'm using ethers to pad my input
 import circuit from "../target/main.json";
 
 export async function mainFunc() {
+  
   const acirBuffer = Buffer.from(circuit.bytecode, 'base64');
   const acirBufferUncompressed = decompressSync(acirBuffer);
 
+  await initACVM();
   const api = await newBarretenbergApiAsync(4);
 
   const [exact, total, subgroup] = await api.acirGetCircuitSizes(acirBufferUncompressed);
@@ -27,7 +29,6 @@ export async function mainFunc() {
   const acirComposer = await api.acirNewAcirComposer(subgroupSize);
 
   async function generateWitness(input: any, acirBuffer: Buffer): Promise<Uint8Array> {
-    await initACVM();
     const initialWitness = new Map<number, string>();
     initialWitness.set(1, ethers.utils.hexZeroPad(`0x${input.x.toString(16)}`, 32));
     initialWitness.set(2, ethers.utils.hexZeroPad(`0x${input.y.toString(16)}`, 32));
